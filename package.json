@@ -40,9 +40,17 @@
       "**/node_modules/@anthropic-ai/**"
     ],
     "mac": {
-      "target": "dir",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
       "icon": "build/icon.png",
       "category": "public.app-category.developer-tools"
+    },
+    "dmg": {
+      "title": "minicc ${version}"
     },
     "npmRebuild": false
   },
