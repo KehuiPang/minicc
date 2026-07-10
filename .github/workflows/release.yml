@@ -1,0 +1,48 @@
+# push 一个 v* tag（如 git tag v1.1.0 && git push origin v1.1.0）即自动：
+# 在 macOS runner 打 dmg(Intel+Apple Silicon)、Windows runner 打 exe，并发到 Release。
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: npm install --legacy-peer-deps
+
+      - name: Build renderer/main
+        run: npm run desktop:build
+
+      - name: Package macOS (dmg)
+        if: matrix.os == 'macos-latest'
+        run: npx electron-builder --mac
+
+      - name: Package Windows (exe)
+        if: matrix.os == 'windows-latest'
+        run: npx electron-builder --win
+
+      - name: Publish to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/*.dmg
+            release/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
