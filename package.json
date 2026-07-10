@@ -1,0 +1,74 @@
+{
+  "name": "minicc",
+  "version": "1.0.0",
+  "description": "Open-source mini Claude Code — a from-scratch coding agent (CLI + macOS desktop). Bring your own API key or local endpoint.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./out/main/index.js",
+  "bin": {
+    "minicc": "./bin/minicc.js"
+  },
+  "files": [
+    "src",
+    "bin",
+    "tsconfig.json",
+    "README.md"
+  ],
+  "scripts": {
+    "dev": "tsx src/index.tsx",
+    "start": "tsx src/index.tsx",
+    "typecheck": "tsc --noEmit",
+    "desktop:dev": "electron-vite dev",
+    "desktop:build": "electron-vite build",
+    "desktop:start": "electron-vite preview",
+    "desktop:pack": "electron-vite build && electron-builder --mac"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "build": {
+    "appId": "com.tanxun.minicc",
+    "productName": "minicc",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "out/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "**/node_modules/@anthropic-ai/**"
+    ],
+    "mac": {
+      "target": "dir",
+      "icon": "build/icon.png",
+      "category": "public.app-category.developer-tools"
+    },
+    "npmRebuild": false
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "@inkjs/ui": "^2.0.0",
+    "highlight.js": "^11.11.1",
+    "ink": "^7.1.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-markdown": "^10.1.0",
+    "rehype-highlight": "^7.0.2",
+    "remark-gfm": "^4.0.1",
+    "tsx": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "electron": "^43.1.0",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
+    "ink-testing-library": "^4.0.0",
+    "sharp": "^0.35.3",
+    "typescript": "^5.7.2",
+    "vite": "^8.1.4"
+  }
+}
