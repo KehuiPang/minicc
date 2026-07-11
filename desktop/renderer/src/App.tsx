@@ -871,7 +871,7 @@ const PRESETS: Preset[] = [
     baseUrl: "",
     keyUrl: "https://console.anthropic.com/settings/keys",
     keyHint: "sk-ant-...",
-    models: ["claude-opus-4-8", "claude-opus-4-7", "claude-sonnet-4-20250514", "claude-3-5-haiku-20241022"],
+    models: ["claude-opus-4-8", "claude-opus-4-7", "claude-sonnet-5", "claude-haiku-4-5"],
     fixedBaseUrl: true,
   },
   {
@@ -881,7 +881,8 @@ const PRESETS: Preset[] = [
     baseUrl: "https://api.openai.com/v1",
     keyUrl: "https://platform.openai.com/api-keys",
     keyHint: "sk-...",
-    models: ["gpt-5.5", "gpt-5.4", "gpt-4o", "gpt-4o-mini"],
+    models: ["gpt-5.6-terra", "gpt-5.6-sol", "gpt-5.6-luna", "gpt-5.5", "gpt-4o-mini"],
+    note: "gpt-5.6-terra 均衡 / sol 最强 / luna 省钱",
     fixedBaseUrl: true,
   },
   {
@@ -891,8 +892,8 @@ const PRESETS: Preset[] = [
     baseUrl: "https://api.deepseek.com/v1",
     keyUrl: "https://platform.deepseek.com/api_keys",
     keyHint: "sk-...",
-    models: ["deepseek-chat", "deepseek-reasoner"],
-    note: "deepseek-chat = V4，deepseek-reasoner = 推理模型",
+    models: ["deepseek-v4-pro", "deepseek-v4-flash"],
+    note: "V4 Pro/Flash；旧 deepseek-chat/deepseek-reasoner 2026-07-24 后停用",
     fixedBaseUrl: true,
   },
   {
@@ -902,7 +903,7 @@ const PRESETS: Preset[] = [
     baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
     keyUrl: "https://bailian.console.aliyun.com/?tab=model#/api-key",
     keyHint: "sk-...",
-    models: ["qwen-max", "qwen-plus", "qwen-turbo", "qwen3-coder-plus"],
+    models: ["qwen3.7-max", "qwen3.7-plus", "qwen3.6-flash", "qwen3-max"],
     fixedBaseUrl: true,
   },
   {
@@ -912,8 +913,8 @@ const PRESETS: Preset[] = [
     baseUrl: "https://ark.cn-beijing.volces.com/api/v3",
     keyUrl: "https://console.volcengine.com/ark/region:ark+cn-beijing/apiKey",
     keyHint: "火山方舟 API Key",
-    models: ["doubao-seed-1-6-250615", "doubao-pro-32k"],
-    note: "豆包需在方舟「在线推理」创建接入点，模型填接入点 ID(ep-...) 或模型名",
+    models: ["doubao-seed-2-1-pro-260628", "doubao-seed-1-6-251015"],
+    note: "豆包需在方舟「在线推理」创建接入点，模型填接入点 ID(ep-...) 或上面的模型名",
     fixedBaseUrl: true,
   },
   {
@@ -923,7 +924,7 @@ const PRESETS: Preset[] = [
     baseUrl: "https://api.minimaxi.com/v1",
     keyUrl: "https://platform.minimaxi.com/user-center/basic-information/interface-key",
     keyHint: "MiniMax API Key",
-    models: ["MiniMax-Text-01", "abab6.5s-chat"],
+    models: ["MiniMax-M3", "MiniMax-M2.7", "MiniMax-M2.5", "MiniMax-M2"],
     fixedBaseUrl: true,
   },
   {
