@@ -871,7 +871,15 @@ const PRESETS: Preset[] = [
     baseUrl: "",
     keyUrl: "https://console.anthropic.com/settings/keys",
     keyHint: "sk-ant-...",
-    models: ["claude-opus-4-8", "claude-opus-4-7", "claude-sonnet-5", "claude-haiku-4-5"],
+    models: [
+      "claude-opus-4-8",
+      "claude-opus-4-7",
+      "claude-opus-4-6",
+      "claude-sonnet-5",
+      "claude-sonnet-4-6",
+      "claude-haiku-4-5",
+      "claude-fable-5",
+    ],
     fixedBaseUrl: true,
   },
   {
@@ -881,7 +889,23 @@ const PRESETS: Preset[] = [
     baseUrl: "https://api.openai.com/v1",
     keyUrl: "https://platform.openai.com/api-keys",
     keyHint: "sk-...",
-    models: ["gpt-5.6-terra", "gpt-5.6-sol", "gpt-5.6-luna", "gpt-5.5", "gpt-4o-mini"],
+    models: [
+      "gpt-5.6-terra",
+      "gpt-5.6-sol",
+      "gpt-5.6-luna",
+      "gpt-5.5",
+      "gpt-5.5-pro",
+      "gpt-5.4",
+      "gpt-5.4-pro",
+      "gpt-5.4-mini",
+      "gpt-5.4-nano",
+      "gpt-4.1",
+      "gpt-4.1-mini",
+      "gpt-4o",
+      "gpt-4o-mini",
+      "o3",
+      "o4-mini",
+    ],
     note: "gpt-5.6-terra 均衡 / sol 最强 / luna 省钱",
     fixedBaseUrl: true,
   },
@@ -892,8 +916,8 @@ const PRESETS: Preset[] = [
     baseUrl: "https://api.deepseek.com/v1",
     keyUrl: "https://platform.deepseek.com/api_keys",
     keyHint: "sk-...",
-    models: ["deepseek-v4-pro", "deepseek-v4-flash"],
-    note: "V4 Pro/Flash；旧 deepseek-chat/deepseek-reasoner 2026-07-24 后停用",
+    models: ["deepseek-v4-pro", "deepseek-v4-flash", "deepseek-chat", "deepseek-reasoner"],
+    note: "V4 Pro/Flash；deepseek-chat/deepseek-reasoner 2026-07-24 后停用",
     fixedBaseUrl: true,
   },
   {
@@ -903,7 +927,19 @@ const PRESETS: Preset[] = [
     baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
     keyUrl: "https://bailian.console.aliyun.com/?tab=model#/api-key",
     keyHint: "sk-...",
-    models: ["qwen3.7-max", "qwen3.7-plus", "qwen3.6-flash", "qwen3-max"],
+    models: [
+      "qwen3.7-max",
+      "qwen3.7-plus",
+      "qwen3.6-flash",
+      "qwen3-max",
+      "qwen-max",
+      "qwen-plus",
+      "qwen-flash",
+      "qwen-turbo",
+      "qwen-long",
+      "qwen3-coder-plus",
+      "qwen3-coder-flash",
+    ],
     fixedBaseUrl: true,
   },
   {
@@ -913,8 +949,16 @@ const PRESETS: Preset[] = [
     baseUrl: "https://ark.cn-beijing.volces.com/api/v3",
     keyUrl: "https://console.volcengine.com/ark/region:ark+cn-beijing/apiKey",
     keyHint: "火山方舟 API Key",
-    models: ["doubao-seed-2-1-pro-260628", "doubao-seed-1-6-251015"],
-    note: "豆包需在方舟「在线推理」创建接入点，模型填接入点 ID(ep-...) 或上面的模型名",
+    models: [
+      "doubao-seed-2-0-pro-260215",
+      "doubao-seed-1-8-251228",
+      "doubao-seed-1-6-251015",
+      "doubao-seed-1-6-flash-250828",
+      "doubao-seed-1-6-lite-251015",
+      "doubao-1-5-pro-32k-250115",
+      "doubao-1-5-lite-32k-250115",
+    ],
+    note: "豆包多在方舟「在线推理」创建接入点后用接入点 ID(ep-...)；模型名带日期串会更新，可用「自定义」直接填最新的",
     fixedBaseUrl: true,
   },
   {
@@ -924,7 +968,16 @@ const PRESETS: Preset[] = [
     baseUrl: "https://api.minimaxi.com/v1",
     keyUrl: "https://platform.minimaxi.com/user-center/basic-information/interface-key",
     keyHint: "MiniMax API Key",
-    models: ["MiniMax-M3", "MiniMax-M2.7", "MiniMax-M2.5", "MiniMax-M2"],
+    models: [
+      "MiniMax-M3",
+      "MiniMax-M2.7",
+      "MiniMax-M2.7-highspeed",
+      "MiniMax-M2.5",
+      "MiniMax-M2.5-highspeed",
+      "MiniMax-M2.1",
+      "MiniMax-M2.1-highspeed",
+      "MiniMax-M2",
+    ],
     fixedBaseUrl: true,
   },
   {
@@ -940,40 +993,72 @@ const PRESETS: Preset[] = [
   },
 ];
 
+type CredSlot = { apiKey?: string; baseUrl?: string };
+
 function SettingsModal({ onClose }: { onClose: () => void }) {
   const [pid, setPid] = useState("anthropic");
   const [model, setModel] = useState(PRESETS[0].models[0]);
   const [apiKey, setApiKey] = useState("");
   const [baseUrl, setBaseUrl] = useState("");
+  const [customModel, setCustomModel] = useState(false);
+  const [showKey, setShowKey] = useState(false);
+  const [creds, setCreds] = useState<Record<string, CredSlot>>({}); // 各平台凭证分槽
   const preset = PRESETS.find((p) => p.id === pid) ?? PRESETS[0];
+
+  // 把某平台槽里的凭证取出来填进字段(没存过就空/回退默认 baseUrl)
+  function slotFields(c: Record<string, CredSlot>, id: string, p: (typeof PRESETS)[number]) {
+    const slot = c[id] || {};
+    return { apiKey: slot.apiKey || "", baseUrl: slot.baseUrl || p.baseUrl };
+  }
 
   useEffect(() => {
     window.minicc.getSettings().then((r) => {
       const s = r?.settings;
-      if (s) {
-        const p = PRESETS.find((x) => x.id === s.providerId) ?? PRESETS[0];
-        setPid(p.id);
-        setModel(s.model || p.models[0] || "");
-        setApiKey(s.apiKey || "");
-        setBaseUrl(s.baseUrl || p.baseUrl);
-      }
+      if (!s) return;
+      const p = PRESETS.find((x) => x.id === s.providerId) ?? PRESETS[0];
+      const c: Record<string, CredSlot> = { ...(s.creds || {}) };
+      // 兼容旧配置(只有顶层单套凭证)：迁移到当前平台槽
+      if (!c[p.id] && (s.apiKey || s.baseUrl)) c[p.id] = { apiKey: s.apiKey, baseUrl: s.baseUrl };
+      setCreds(c);
+      const f = slotFields(c, p.id, p);
+      setPid(p.id);
+      setModel(s.model || p.models[0] || "");
+      setApiKey(f.apiKey);
+      setBaseUrl(f.baseUrl);
+      // 已存模型不在预设列表里(或该平台无预设)→ 切到手输框回显
+      setCustomModel(p.models.length === 0 || (!!s.model && !p.models.includes(s.model)));
     });
   }, []);
 
   function changePreset(id: string) {
     const p = PRESETS.find((x) => x.id === id) ?? PRESETS[0];
+    // 先把当前平台的凭证存回它自己的槽，再带出目标平台的槽(没有就空)
+    setCreds((prev) => ({ ...prev, [pid]: { apiKey, baseUrl } }));
+    const f = slotFields(creds, id, p);
     setPid(id);
     setModel(p.models[0] || "");
-    setBaseUrl(p.baseUrl);
+    setApiKey(f.apiKey);
+    setBaseUrl(f.baseUrl);
+    setCustomModel(p.models.length === 0);
+    setShowKey(false);
   }
 
+  // key 只含可见 ASCII：清掉粘贴带进来的空白/非 ASCII 乱码字符(否则网关直接 401)
+  const cleanKey = (v: string) => v.replace(/[^\x20-\x7E]/g, "").trim();
+
   function save() {
+    const slot: CredSlot = {
+      apiKey: cleanKey(apiKey) || undefined,
+      baseUrl: preset.kind === "openai" ? baseUrl.trim() || preset.baseUrl : undefined,
+    };
+    const newCreds = { ...creds, [pid]: slot }; // 存进当前平台的槽
     window.minicc.setSettings({
       kind: preset.kind,
       providerId: pid,
       model: model || undefined,
-      apiKey: apiKey || undefined,
-      baseUrl: preset.kind === "openai" ? baseUrl || preset.baseUrl : undefined,
+      apiKey: slot.apiKey, // 顶层=当前生效平台的凭证
+      baseUrl: slot.baseUrl,
+      creds: newCreds,
     });
     onClose();
   }
@@ -1006,12 +1091,22 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
 
         <label className="field">
           <span>API Key</span>
-          <input
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder={preset.keyHint}
-          />
+          <div className="key-wrap">
+            <input
+              type={showKey ? "text" : "password"}
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder={preset.keyHint}
+            />
+            <button
+              type="button"
+              className="eye-btn"
+              onClick={() => setShowKey((v) => !v)}
+              title={showKey ? "隐藏" : "显示"}
+            >
+              {showKey ? "🙈" : "👁"}
+            </button>
+          </div>
         </label>
 
         {!preset.fixedBaseUrl && (
@@ -1027,17 +1122,32 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
 
         <label className="field">
           <span>模型</span>
-          <input
-            list="model-suggest"
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-            placeholder="模型名（可下拉选或直接输入）"
-          />
-          <datalist id="model-suggest">
-            {preset.models.map((m) => (
-              <option key={m} value={m} />
-            ))}
-          </datalist>
+          {preset.models.length > 0 && !customModel ? (
+            <select
+              value={model}
+              onChange={(e) => {
+                if (e.target.value === "__custom__") {
+                  setCustomModel(true);
+                  setModel("");
+                } else {
+                  setModel(e.target.value);
+                }
+              }}
+            >
+              {preset.models.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+              <option value="__custom__">自定义 / 其它…</option>
+            </select>
+          ) : (
+            <input
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              placeholder="模型名（直接输入）"
+            />
+          )}
         </label>
 
         {preset.note && <p className="s-note">{preset.note}</p>}

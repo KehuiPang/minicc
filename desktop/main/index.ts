@@ -65,14 +65,30 @@ function mimeFor(path: string): string | null {
   return null;
 }
 
+// 平台友好名（各兼容端点的 cfg.provider 都是 openai，改用 UI 预设 providerId 显示真实平台）
+const PROVIDER_LABELS: Record<string, string> = {
+  anthropic: "Claude API",
+  openai: "OpenAI",
+  deepseek: "DeepSeek",
+  qwen: "通义千问",
+  doubao: "豆包",
+  minimax: "MiniMax",
+  custom: "自定义端点",
+};
+function labelFor(cfg: ReturnType<typeof loadConfig>, providerId?: string): string {
+  if (providerId && PROVIDER_LABELS[providerId]) return PROVIDER_LABELS[providerId];
+  return cfg.provider;
+}
+
 function initProvider() {
   cwd = process.cwd();
-  applyEnvFromSettings(loadSettings()); // 有已保存设置则据此，否则自动推断
+  const st = loadSettings();
+  applyEnvFromSettings(st); // 有已保存设置则据此，否则自动推断
   const cfg = loadConfig();
   provider = makeProvider(cfg);
   sysPrompt = systemPrompt(cwd);
   agentOpts = { compactThreshold: cfg.compactThreshold, keepRecent: cfg.keepRecentTurns };
-  backendLabel = cfg.provider;
+  backendLabel = labelFor(cfg, st?.providerId);
   modelLabel = cfg.model;
 }
 
@@ -82,7 +98,7 @@ function applySettings(s: Settings) {
   applyEnvFromSettings(s);
   const cfg = loadConfig();
   provider = makeProvider(cfg);
-  backendLabel = cfg.provider;
+  backendLabel = labelFor(cfg, s.providerId);
   modelLabel = cfg.model;
   for (const a of agents.values()) a.setProvider(provider);
   send("evt:ready", { backend: backendLabel, model: modelLabel, cwd });

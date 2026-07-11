@@ -1050,6 +1050,29 @@ body {
   font-size: 11.5px;
   margin-top: 2px;
 }
+.settings .key-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.settings .key-wrap input {
+  flex: 1;
+  padding-right: 38px;
+}
+.settings .key-wrap .eye-btn {
+  position: absolute;
+  right: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 4px 6px;
+  opacity: 0.7;
+}
+.settings .key-wrap .eye-btn:hover {
+  opacity: 1;
+}
 .settings .btns {
   display: flex;
   gap: 10px;

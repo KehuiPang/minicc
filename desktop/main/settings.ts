@@ -51,12 +51,19 @@ export function saveWindowBounds(b: WindowBounds) {
 // 公开版：仅 API key 方式（Claude API / OpenAI 兼容/本地）
 export type ProviderKind = "anthropic-apikey" | "openai";
 
+// 每个平台各存各的凭证（切平台自动带出对应的，不串号）
+export interface CredSlot {
+  apiKey?: string;
+  baseUrl?: string;
+}
+
 export interface Settings {
   kind: ProviderKind;
-  providerId?: string; // UI 预设平台标识(anthropic/openai/deepseek/qwen/doubao/minimax/custom)，仅回显用
+  providerId?: string; // UI 预设平台标识(anthropic/openai/deepseek/qwen/doubao/minimax/custom)
   model?: string;
-  apiKey?: string; // anthropic-apikey / openai
+  apiKey?: string; // 当前生效平台的凭证(loadConfig 用)；镜像自 creds[providerId]
   baseUrl?: string; // openai 兼容端点(官方/国内平台/本地/自建)
+  creds?: Record<string, CredSlot>; // 按平台分槽保存的全部凭证
 }
 
 export function loadSettings(): Settings | null {
