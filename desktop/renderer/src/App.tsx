@@ -852,48 +852,127 @@ function clip(text: string, lines = 12): string {
 }
 
 type Kind = "anthropic-apikey" | "openai";
-const PROVIDERS: { kind: Kind; label: string }[] = [
-  { kind: "anthropic-apikey", label: "Claude API Key" },
-  { kind: "openai", label: "OpenAI 兼容 / 本地 / 自建（vLLM、Ollama 等）" },
+interface Preset {
+  id: string;
+  label: string;
+  kind: Kind;
+  baseUrl: string; // "" = anthropic 官方 / 或用户自填(custom)
+  keyUrl: string; // 获取 API key 的官网页面（点链接跳转）
+  keyHint: string; // key 输入框占位
+  models: string[];
+  note?: string;
+  fixedBaseUrl: boolean; // false=用户可编辑 baseUrl(本地/自定义)
+}
+const PRESETS: Preset[] = [
+  {
+    id: "anthropic",
+    label: "Claude（Anthropic）",
+    kind: "anthropic-apikey",
+    baseUrl: "",
+    keyUrl: "https://console.anthropic.com/settings/keys",
+    keyHint: "sk-ant-...",
+    models: ["claude-opus-4-8", "claude-opus-4-7", "claude-sonnet-4-20250514", "claude-3-5-haiku-20241022"],
+    fixedBaseUrl: true,
+  },
+  {
+    id: "openai",
+    label: "OpenAI（GPT）",
+    kind: "openai",
+    baseUrl: "https://api.openai.com/v1",
+    keyUrl: "https://platform.openai.com/api-keys",
+    keyHint: "sk-...",
+    models: ["gpt-5.5", "gpt-5.4", "gpt-4o", "gpt-4o-mini"],
+    fixedBaseUrl: true,
+  },
+  {
+    id: "deepseek",
+    label: "DeepSeek（深度求索）",
+    kind: "openai",
+    baseUrl: "https://api.deepseek.com/v1",
+    keyUrl: "https://platform.deepseek.com/api_keys",
+    keyHint: "sk-...",
+    models: ["deepseek-chat", "deepseek-reasoner"],
+    note: "deepseek-chat = V4，deepseek-reasoner = 推理模型",
+    fixedBaseUrl: true,
+  },
+  {
+    id: "qwen",
+    label: "通义千问 Qwen（阿里百炼）",
+    kind: "openai",
+    baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    keyUrl: "https://bailian.console.aliyun.com/?tab=model#/api-key",
+    keyHint: "sk-...",
+    models: ["qwen-max", "qwen-plus", "qwen-turbo", "qwen3-coder-plus"],
+    fixedBaseUrl: true,
+  },
+  {
+    id: "doubao",
+    label: "豆包 Doubao（火山方舟）",
+    kind: "openai",
+    baseUrl: "https://ark.cn-beijing.volces.com/api/v3",
+    keyUrl: "https://console.volcengine.com/ark/region:ark+cn-beijing/apiKey",
+    keyHint: "火山方舟 API Key",
+    models: ["doubao-seed-1-6-250615", "doubao-pro-32k"],
+    note: "豆包需在方舟「在线推理」创建接入点，模型填接入点 ID(ep-...) 或模型名",
+    fixedBaseUrl: true,
+  },
+  {
+    id: "minimax",
+    label: "MiniMax",
+    kind: "openai",
+    baseUrl: "https://api.minimaxi.com/v1",
+    keyUrl: "https://platform.minimaxi.com/user-center/basic-information/interface-key",
+    keyHint: "MiniMax API Key",
+    models: ["MiniMax-Text-01", "abab6.5s-chat"],
+    fixedBaseUrl: true,
+  },
+  {
+    id: "custom",
+    label: "本地 / 自建端点（vLLM、Ollama 等）",
+    kind: "openai",
+    baseUrl: "http://localhost:8000/v1",
+    keyUrl: "",
+    keyHint: "本地可留空",
+    models: [],
+    note: "任意 OpenAI 兼容端点，填你的 Base URL + 模型名即可",
+    fixedBaseUrl: false,
+  },
 ];
-const MODEL_SUGGEST: Record<Kind, string[]> = {
-  "anthropic-apikey": ["claude-sonnet-4-20250514", "claude-opus-4-20250514", "claude-3-5-haiku-20241022"],
-  openai: ["gpt-4o", "gpt-4o-mini", "qwen3-coder"],
-};
-const DEFAULT_MODEL: Record<Kind, string> = {
-  "anthropic-apikey": "claude-sonnet-4-20250514",
-  openai: "gpt-4o",
-};
 
 function SettingsModal({ onClose }: { onClose: () => void }) {
-  const [kind, setKind] = useState<Kind>("anthropic-apikey");
-  const [model, setModel] = useState(DEFAULT_MODEL["anthropic-apikey"]);
+  const [pid, setPid] = useState("anthropic");
+  const [model, setModel] = useState(PRESETS[0].models[0]);
   const [apiKey, setApiKey] = useState("");
   const [baseUrl, setBaseUrl] = useState("");
+  const preset = PRESETS.find((p) => p.id === pid) ?? PRESETS[0];
 
   useEffect(() => {
     window.minicc.getSettings().then((r) => {
       const s = r?.settings;
       if (s) {
-        setKind(s.kind);
-        setModel(s.model || DEFAULT_MODEL[s.kind as Kind] || "");
+        const p = PRESETS.find((x) => x.id === s.providerId) ?? PRESETS[0];
+        setPid(p.id);
+        setModel(s.model || p.models[0] || "");
         setApiKey(s.apiKey || "");
-        setBaseUrl(s.baseUrl || "");
+        setBaseUrl(s.baseUrl || p.baseUrl);
       }
     });
   }, []);
 
-  function changeKind(k: Kind) {
-    setKind(k);
-    setModel(DEFAULT_MODEL[k]);
+  function changePreset(id: string) {
+    const p = PRESETS.find((x) => x.id === id) ?? PRESETS[0];
+    setPid(id);
+    setModel(p.models[0] || "");
+    setBaseUrl(p.baseUrl);
   }
 
   function save() {
     window.minicc.setSettings({
-      kind,
+      kind: preset.kind,
+      providerId: pid,
       model: model || undefined,
       apiKey: apiKey || undefined,
-      baseUrl: baseUrl || undefined,
+      baseUrl: preset.kind === "openai" ? baseUrl || preset.baseUrl : undefined,
     });
     onClose();
   }
@@ -901,18 +980,49 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="perm-overlay" onClick={onClose}>
       <div className="settings" onClick={(e) => e.stopPropagation()}>
-        <h3>模型后端设置</h3>
+        <h3>模型设置</h3>
 
         <label className="field">
-          <span>Provider</span>
-          <select value={kind} onChange={(e) => changeKind(e.target.value as Kind)}>
-            {PROVIDERS.map((p) => (
-              <option key={p.kind} value={p.kind}>
+          <span>模型平台</span>
+          <select value={pid} onChange={(e) => changePreset(e.target.value)}>
+            {PRESETS.map((p) => (
+              <option key={p.id} value={p.id}>
                 {p.label}
               </option>
             ))}
           </select>
         </label>
+
+        {preset.keyUrl && (
+          <div className="key-guide">
+            没有 API Key？
+            <a onClick={() => window.minicc.openExternal(preset.keyUrl)}>
+              点此前往 {preset.label} 官网获取 ↗
+            </a>
+            <span className="key-steps">（登录 → 创建 API Key → 复制粘贴到下方）</span>
+          </div>
+        )}
+
+        <label className="field">
+          <span>API Key</span>
+          <input
+            type="password"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder={preset.keyHint}
+          />
+        </label>
+
+        {!preset.fixedBaseUrl && (
+          <label className="field">
+            <span>Base URL</span>
+            <input
+              value={baseUrl}
+              onChange={(e) => setBaseUrl(e.target.value)}
+              placeholder="http://localhost:8000/v1"
+            />
+          </label>
+        )}
 
         <label className="field">
           <span>模型</span>
@@ -920,37 +1030,16 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
             list="model-suggest"
             value={model}
             onChange={(e) => setModel(e.target.value)}
-            placeholder="模型名"
+            placeholder="模型名（可下拉选或直接输入）"
           />
           <datalist id="model-suggest">
-            {MODEL_SUGGEST[kind].map((m) => (
+            {preset.models.map((m) => (
               <option key={m} value={m} />
             ))}
           </datalist>
         </label>
 
-        {kind === "anthropic-apikey" && (
-          <label className="field">
-            <span>API Key</span>
-            <input value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="sk-ant-..." />
-          </label>
-        )}
-        {kind === "openai" && (
-          <>
-            <label className="field">
-              <span>Base URL</span>
-              <input
-                value={baseUrl}
-                onChange={(e) => setBaseUrl(e.target.value)}
-                placeholder="https://api.openai.com/v1 或 http://localhost:8000/v1"
-              />
-            </label>
-            <label className="field">
-              <span>API Key</span>
-              <input value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="sk-... (本地可留空)" />
-            </label>
-          </>
-        )}
+        {preset.note && <p className="s-note">{preset.note}</p>}
 
         <div className="btns">
           <button onClick={onClose}>取消</button>

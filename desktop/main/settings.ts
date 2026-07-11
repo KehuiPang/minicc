@@ -53,9 +53,10 @@ export type ProviderKind = "anthropic-apikey" | "openai";
 
 export interface Settings {
   kind: ProviderKind;
+  providerId?: string; // UI 预设平台标识(anthropic/openai/deepseek/qwen/doubao/minimax/custom)，仅回显用
   model?: string;
   apiKey?: string; // anthropic-apikey / openai
-  baseUrl?: string; // openai 兼容端点(官方/本地/自建)
+  baseUrl?: string; // openai 兼容端点(官方/国内平台/本地/自建)
 }
 
 export function loadSettings(): Settings | null {
