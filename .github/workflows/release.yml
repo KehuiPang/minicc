@@ -1,5 +1,6 @@
 # push 一个 v* tag（如 git tag v1.1.0 && git push origin v1.1.0）即自动：
-# 在 macOS runner 打 dmg(Intel+Apple Silicon)、Windows runner 打 exe，并发到 Release。
+# 在 Linux runner 打 AppImage/deb、macOS runner 打 dmg(Intel+Apple Silicon)、
+# Windows runner 打 exe，并发到 Release（三平台）。
 name: Release
 
 on:
@@ -15,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -30,6 +31,10 @@ jobs:
       - name: Build renderer/main
         run: npm run desktop:build
 
+      - name: Package Linux (AppImage/deb)
+        if: matrix.os == 'ubuntu-latest'
+        run: npx electron-builder --linux
+
       - name: Package macOS (dmg)
         if: matrix.os == 'macos-latest'
         run: npx electron-builder --mac
@@ -42,6 +47,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
+            release/*.AppImage
+            release/*.deb
             release/*.dmg
             release/*.exe
         env:
