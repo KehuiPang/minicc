@@ -4,18 +4,23 @@ A from-scratch, open-source **coding agent** — a mini Claude Code you fully ow
 
 本质很简单：**LLM + 工具执行循环 + 界面**。模型接你自己的 API key（或本地/自建端点），壳（harness）完全自研、代码全公开。
 
-> 公开版只支持 **API key / 自定义端点** 方式，合规、通用、谁都能安全用：
+> 公开版只支持 **API key / 自定义端点** 方式，合规、通用、谁都能安全用。内置主流平台预设，填 key 即用：
 > - **Claude API key**（Anthropic 官方）
-> - **OpenAI 兼容端点**：官方 OpenAI，或**本地 / 自建服务器**（vLLM、Ollama、LM Studio 等任意 OpenAI 兼容 API）
+> - **OpenAI**（GPT 系列）
+> - **国内主流**：DeepSeek、智谱 GLM、通义千问、豆包、Kimi（月之暗面）、腾讯混元、MiniMax
+> - **xAI Grok**
+> - **本地 / 自建端点**：vLLM、Ollama、LM Studio 等任意 OpenAI 兼容 API
 
 ## Features
 
-- 🔌 **可插拔后端**：Claude API / OpenAI / 本地自建，设置里一键切换
+- 🔌 **多平台预设**：Claude / OpenAI / DeepSeek / 智谱 / 通义千问 / 豆包 / Kimi / 腾讯混元 / MiniMax / Grok / 本地自建，一键切换，**各平台凭证分开保存**互不覆盖
+- ⚡ **流式输出**：回复逐字实时打印
+- 🔀 **快捷切换**：底栏点供应商名/模型名直接弹菜单切换，不用开设置
 - 🛠️ **真工具**：读写文件、精确编辑、跑命令、glob/grep 搜索，带权限确认（可"总是允许"记住）
-- 🖼️ **多模态**：粘贴/添加图片发给模型
+- 🖼️ **多模态**：粘贴/添加图片发给（视觉）模型
 - 💬 **多会话**：历史侧边栏、新建/切换/删除，持久化
 - 📝 **Markdown 渲染 + 代码语法高亮**，工具调用意图折叠
-- 🧠 **上下文自动压缩**：长任务不撑爆，token 用量按会话统计
+- 🧠 **上下文自动压缩**：按各模型真实上下文窗口触发，长任务不撑爆，token 用量按会话统计
 - 🖥️ **两种形态**：终端 CLI（Ink）+ macOS 桌面 GUI（Electron）
 
 ## Quick start
@@ -53,7 +58,7 @@ npm run desktop:pack      # 打包出 release/mac/minicc.app
 | `MINICC_API_KEY` | OpenAI/自建端点的 key |
 | `MINICC_MODEL` | 模型名 |
 | `MINICC_MAX_TOKENS` | 单次最大输出 token（默认 8192）|
-| `MINICC_COMPACT_THRESHOLD` | 上下文超此 token 数自动压缩（默认 60000）|
+| `MINICC_COMPACT_THRESHOLD` | 上下文超此 token 数自动压缩（默认取该模型窗口的 80%）|
 
 ## 结构
 
