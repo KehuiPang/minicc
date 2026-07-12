@@ -33,15 +33,15 @@ jobs:
 
       - name: Package Linux (AppImage/deb)
         if: matrix.os == 'ubuntu-latest'
-        run: npx electron-builder --linux
+        run: npx electron-builder --linux --publish never
 
       - name: Package macOS (dmg)
         if: matrix.os == 'macos-latest'
-        run: npx electron-builder --mac
+        run: npx electron-builder --mac --publish never
 
       - name: Package Windows (exe)
         if: matrix.os == 'windows-latest'
-        run: npx electron-builder --win
+        run: npx electron-builder --win --publish never
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
