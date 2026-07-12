@@ -1,6 +1,6 @@
 {
   "name": "minicc",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Open-source mini Claude Code — a from-scratch coding agent (CLI + macOS desktop). Bring your own API key or local endpoint.",
   "license": "MIT",
   "type": "module",

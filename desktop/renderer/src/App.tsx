@@ -85,6 +85,9 @@ export function App() {
   const [currentId, setCurrentId] = useState("");
   const [showUsage, setShowUsage] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [curProviderId, setCurProviderId] = useState("");
+  const [showModelMenu, setShowModelMenu] = useState(false);
+  const [showProviderMenu, setShowProviderMenu] = useState(false);
   const [sidebarW, setSidebarW] = useState(
     () => Number(localStorage.getItem("minicc-sidebar-w")) || 232,
   );
@@ -115,6 +118,35 @@ export function App() {
   const histIdx = useRef<number>(-1);
 
   const push = (it: Item) => setItems((p) => [...p, it]);
+
+  // 当前平台预设(用于底栏模型快切列出该平台模型)；设置面板关闭后刷新
+  useEffect(() => {
+    window.minicc.getSettings().then((r) => setCurProviderId(r?.settings?.providerId || ""));
+  }, [showSettings]);
+  const curPreset = PRESETS.find((p) => p.id === curProviderId);
+  const quickModels = curPreset?.models ?? [];
+  async function quickModel(m: string) {
+    const r = await window.minicc.getSettings();
+    const cur = r?.settings;
+    if (cur) window.minicc.setSettings({ ...cur, model: m });
+    setShowModelMenu(false);
+  }
+  // 快捷切换供应商：带出该平台已存的 key/baseUrl，默认用该平台第一个模型
+  async function quickProvider(p: (typeof PRESETS)[number]) {
+    const r = await window.minicc.getSettings();
+    const cur = r?.settings || {};
+    const slot = (cur.creds || {})[p.id] || {};
+    window.minicc.setSettings({
+      ...cur,
+      kind: p.kind,
+      providerId: p.id,
+      apiKey: slot.apiKey,
+      baseUrl: p.fixedBaseUrl ? p.baseUrl : slot.baseUrl || p.baseUrl,
+      model: p.models[0] || cur.model,
+    });
+    setCurProviderId(p.id);
+    setShowProviderMenu(false);
+  }
 
   useEffect(() => {
     window.minicc.onEvent((ch, payload: any) => {
@@ -475,6 +507,64 @@ export function App() {
 
         <div className="statusbar">
           <span className={busy ? "busy" : ""}>{busy ? "● 运行中（Esc 停止）" : "○ 就绪"}</span>
+
+          <div className="model-quick">
+            <button className="mq-btn mq-prov" onClick={() => setShowProviderMenu((v) => !v)}>
+              {meta.backend} <span className="mq-caret">▾</span>
+            </button>
+            <span className="mq-mid">·</span>
+            <button className="mq-btn mq-mod" onClick={() => setShowModelMenu((v) => !v)}>
+              {meta.model} <span className="mq-caret">▾</span>
+            </button>
+            {showProviderMenu && (
+              <>
+                <div className="mq-overlay" onClick={() => setShowProviderMenu(false)} />
+                <div className="mq-menu mq-menu-prov">
+                  <div className="mq-head">切换平台</div>
+                  {ORDERED_PRESETS.map((p) => (
+                    <button
+                      key={p.id}
+                      className={"mq-item" + (p.id === curProviderId ? " on" : "")}
+                      onClick={() => quickProvider(p)}
+                    >
+                      <span>{p.label}</span>
+                      {p.id === curProviderId && <span className="mq-check">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+            {showModelMenu && (
+              <>
+                <div className="mq-overlay" onClick={() => setShowModelMenu(false)} />
+                <div className="mq-menu">
+                  <div className="mq-head">切换模型 · {curPreset?.label ?? meta.backend}</div>
+                  {quickModels.length === 0 && <div className="mq-empty">无预设模型，去设置里填</div>}
+                  {quickModels.map((m) => (
+                    <button
+                      key={m}
+                      className={"mq-item" + (m === meta.model ? " on" : "")}
+                      onClick={() => quickModel(m)}
+                    >
+                      <span>{m}</span>
+                      {m === meta.model && <span className="mq-check">✓</span>}
+                    </button>
+                  ))}
+                  <div className="mq-sep" />
+                  <button
+                    className="mq-item mq-more"
+                    onClick={() => {
+                      setShowModelMenu(false);
+                      setShowSettings(true);
+                    }}
+                  >
+                    全部设置 / 换平台…
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+
           <span className="spacer" />
           <span className="usage-btn" onClick={() => setShowUsage((v) => !v)}>
             <span className="u-seg">上下文 {(usage.lastInput / 1000).toFixed(1)}k</span>
@@ -860,6 +950,7 @@ interface Preset {
   keyUrl: string; // 获取 API key 的官网页面（点链接跳转）
   keyHint: string; // key 输入框占位
   models: string[];
+  modelLabels?: Record<string, string>; // 模型 id → 灰字说明
   note?: string;
   fixedBaseUrl: boolean; // false=用户可编辑 baseUrl(本地/自定义)
 }
@@ -981,6 +1072,89 @@ const PRESETS: Preset[] = [
     fixedBaseUrl: true,
   },
   {
+    id: "zhipu",
+    label: "智谱 GLM（BigModel）",
+    kind: "openai",
+    baseUrl: "https://open.bigmodel.cn/api/paas/v4",
+    keyUrl: "https://open.bigmodel.cn/apikey/platform",
+    keyHint: "智谱 API Key",
+    models: [
+      "glm-5.2",
+      "glm-5.1",
+      "glm-5",
+      "glm-5-turbo",
+      "glm-4.7",
+      "glm-4.6",
+      "glm-4.5",
+      "glm-4.7-flash",
+      "glm-5v-turbo",
+      "glm-4.6v",
+      "glm-4.6v-flash",
+      "glm-4.1v-thinking",
+    ],
+    note: "glm-5.2 旗舰(1M上下文)；glm-5v-turbo / glm-4.6v 为视觉多模态(支持图文)",
+    fixedBaseUrl: true,
+  },
+  {
+    id: "kimi",
+    label: "Kimi（月之暗面 Moonshot）",
+    kind: "openai",
+    baseUrl: "https://api.moonshot.cn/v1",
+    keyUrl: "https://platform.moonshot.cn/console/api-keys",
+    keyHint: "sk-...",
+    models: [
+      "kimi-k2.7-code",
+      "kimi-k2.7-code-highspeed",
+      "kimi-k2.6",
+      "kimi-k2.5",
+      "kimi-latest",
+      "moonshot-v1-128k",
+      "moonshot-v1-32k",
+      "moonshot-v1-8k",
+      "moonshot-v1-128k-vision-preview",
+      "moonshot-v1-32k-vision-preview",
+      "moonshot-v1-8k-vision-preview",
+    ],
+    note: "国际站请改 https://api.moonshot.ai/v1；kimi-latest 与 *-vision-preview 支持图文",
+    fixedBaseUrl: false,
+  },
+  {
+    id: "hunyuan",
+    label: "腾讯混元（元宝）",
+    kind: "openai",
+    baseUrl: "https://api.hunyuan.cloud.tencent.com/v1",
+    keyUrl: "https://console.cloud.tencent.com/hunyuan/api-key",
+    keyHint: "混元 API Key",
+    models: [
+      "hunyuan-turbos-latest",
+      "hunyuan-t1-latest",
+      "hunyuan-turbo-latest",
+      "hunyuan-large",
+      "hunyuan-standard",
+      "hunyuan-lite",
+      "hunyuan-vision",
+    ],
+    note: "元宝对应腾讯混元 API；hunyuan-vision 支持图文",
+    fixedBaseUrl: true,
+  },
+  {
+    id: "grok",
+    label: "Grok（xAI）",
+    kind: "openai",
+    baseUrl: "https://api.x.ai/v1",
+    keyUrl: "https://console.x.ai",
+    keyHint: "xai-...",
+    models: [
+      "grok-4.5",
+      "grok-4.3",
+      "grok-4.20-0309-reasoning",
+      "grok-4.20-0309-non-reasoning",
+      "grok-4.20-multi-agent-0309",
+    ],
+    note: "grok-4.x 系原生多模态(支持图文)；grok-4.3 为 1M 上下文旗舰",
+    fixedBaseUrl: true,
+  },
+  {
     id: "custom",
     label: "本地 / 自建端点（vLLM、Ollama 等）",
     kind: "openai",
@@ -993,7 +1167,46 @@ const PRESETS: Preset[] = [
   },
 ];
 
+// 菜单/下拉里的展示顺序(不改 PRESETS 定义本身)；anthropic 打头，custom 收尾
+const PROVIDER_ORDER = [
+  "anthropic",
+  "openai",
+  "zhipu",
+  "deepseek",
+  "minimax",
+  "doubao",
+  "qwen",
+  "kimi",
+  "hunyuan",
+  "grok",
+  "custom",
+];
+const ORDERED_PRESETS: Preset[] = PROVIDER_ORDER.map(
+  (id) => PRESETS.find((p) => p.id === id)!,
+).filter(Boolean);
+
 type CredSlot = { apiKey?: string; baseUrl?: string };
+
+// 简约线条眼睛图标：off=true 显示"划掉的眼睛"(当前明文，点击隐藏)
+function EyeIcon({ off }: { off: boolean }) {
+  return (
+    <svg
+      width="17"
+      height="17"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z" />
+      <circle cx="12" cy="12" r="3" />
+      {off && <line x1="3" y1="3" x2="21" y2="21" />}
+    </svg>
+  );
+}
 
 function SettingsModal({ onClose }: { onClose: () => void }) {
   const [pid, setPid] = useState("anthropic");
@@ -1003,12 +1216,18 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
   const [customModel, setCustomModel] = useState(false);
   const [showKey, setShowKey] = useState(false);
   const [creds, setCreds] = useState<Record<string, CredSlot>>({}); // 各平台凭证分槽
+  const credsRef = useRef(creds); // 镜像最新 creds，避免切换时读到过时闭包(会误显示空 key→保存覆盖)
+  credsRef.current = creds;
   const preset = PRESETS.find((p) => p.id === pid) ?? PRESETS[0];
 
   // 把某平台槽里的凭证取出来填进字段(没存过就空/回退默认 baseUrl)
   function slotFields(c: Record<string, CredSlot>, id: string, p: (typeof PRESETS)[number]) {
     const slot = c[id] || {};
-    return { apiKey: slot.apiKey || "", baseUrl: slot.baseUrl || p.baseUrl };
+    return {
+      apiKey: slot.apiKey || "",
+      // 固定端点的平台始终用预设 baseUrl，忽略旧存值(避免端点迁移后残留旧地址连不上)
+      baseUrl: p.fixedBaseUrl ? p.baseUrl : slot.baseUrl || p.baseUrl,
+    };
   }
 
   useEffect(() => {
@@ -1020,6 +1239,7 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
       // 兼容旧配置(只有顶层单套凭证)：迁移到当前平台槽
       if (!c[p.id] && (s.apiKey || s.baseUrl)) c[p.id] = { apiKey: s.apiKey, baseUrl: s.baseUrl };
       setCreds(c);
+      credsRef.current = c;
       const f = slotFields(c, p.id, p);
       setPid(p.id);
       setModel(s.model || p.models[0] || "");
@@ -1032,9 +1252,12 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
 
   function changePreset(id: string) {
     const p = PRESETS.find((x) => x.id === id) ?? PRESETS[0];
-    // 先把当前平台的凭证存回它自己的槽，再带出目标平台的槽(没有就空)
-    setCreds((prev) => ({ ...prev, [pid]: { apiKey, baseUrl } }));
-    const f = slotFields(creds, id, p);
+    // 先把当前平台的凭证存回它自己的槽，再从「最新」creds(ref)带出目标平台的槽
+    // 用 credsRef 而非闭包 creds：否则连续切换会读到过时值→目标 key 显示空→保存把空覆盖回去
+    const merged = { ...credsRef.current, [pid]: { apiKey, baseUrl } };
+    credsRef.current = merged;
+    setCreds(merged);
+    const f = slotFields(merged, id, p);
     setPid(id);
     setModel(p.models[0] || "");
     setApiKey(f.apiKey);
@@ -1047,11 +1270,13 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
   const cleanKey = (v: string) => v.replace(/[^\x20-\x7E]/g, "").trim();
 
   function save() {
+    const prevSlot = credsRef.current[pid] || {};
     const slot: CredSlot = {
-      apiKey: cleanKey(apiKey) || undefined,
+      // 空则回退到已存的 key，绝不用空把原凭证覆盖掉(防误抹)
+      apiKey: cleanKey(apiKey) || prevSlot.apiKey || undefined,
       baseUrl: preset.kind === "openai" ? baseUrl.trim() || preset.baseUrl : undefined,
     };
-    const newCreds = { ...creds, [pid]: slot }; // 存进当前平台的槽
+    const newCreds = { ...credsRef.current, [pid]: slot }; // 存进当前平台的槽(用最新creds,别丢其它槽)
     window.minicc.setSettings({
       kind: preset.kind,
       providerId: pid,
@@ -1071,54 +1296,13 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
         <label className="field">
           <span>模型平台</span>
           <select value={pid} onChange={(e) => changePreset(e.target.value)}>
-            {PRESETS.map((p) => (
+            {ORDERED_PRESETS.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.label}
               </option>
             ))}
           </select>
         </label>
-
-        {preset.keyUrl && (
-          <div className="key-guide">
-            没有 API Key？
-            <a onClick={() => window.minicc.openExternal(preset.keyUrl)}>
-              点此前往 {preset.label} 官网获取 ↗
-            </a>
-            <span className="key-steps">（登录 → 创建 API Key → 复制粘贴到下方）</span>
-          </div>
-        )}
-
-        <label className="field">
-          <span>API Key</span>
-          <div className="key-wrap">
-            <input
-              type={showKey ? "text" : "password"}
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder={preset.keyHint}
-            />
-            <button
-              type="button"
-              className="eye-btn"
-              onClick={() => setShowKey((v) => !v)}
-              title={showKey ? "隐藏" : "显示"}
-            >
-              {showKey ? "🙈" : "👁"}
-            </button>
-          </div>
-        </label>
-
-        {!preset.fixedBaseUrl && (
-          <label className="field">
-            <span>Base URL</span>
-            <input
-              value={baseUrl}
-              onChange={(e) => setBaseUrl(e.target.value)}
-              placeholder="http://localhost:8000/v1"
-            />
-          </label>
-        )}
 
         <label className="field">
           <span>模型</span>
@@ -1149,6 +1333,48 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
             />
           )}
         </label>
+        {preset.modelLabels?.[model] && <p className="model-sub">{preset.modelLabels[model]}</p>}
+
+        {preset.keyUrl && (
+          <div className="key-guide">
+            没有 API Key？
+            <a onClick={() => window.minicc.openExternal(preset.keyUrl)}>
+              点此前往 {preset.label} 官网获取 ↗
+            </a>
+            <span className="key-steps">（登录 → 创建 API Key → 复制粘贴到下方）</span>
+          </div>
+        )}
+
+        <label className="field">
+          <span>API Key</span>
+          <div className="key-wrap">
+            <input
+              type={showKey ? "text" : "password"}
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder={preset.keyHint}
+            />
+            <button
+              type="button"
+              className="eye-btn"
+              onClick={() => setShowKey((v) => !v)}
+              title={showKey ? "隐藏" : "显示"}
+            >
+              <EyeIcon off={showKey} />
+            </button>
+          </div>
+        </label>
+
+        {!preset.fixedBaseUrl && (
+          <label className="field">
+            <span>Base URL</span>
+            <input
+              value={baseUrl}
+              onChange={(e) => setBaseUrl(e.target.value)}
+              placeholder="http://localhost:8000/v1"
+            />
+          </label>
+        )}
 
         {preset.note && <p className="s-note">{preset.note}</p>}
 

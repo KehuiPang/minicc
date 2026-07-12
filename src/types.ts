@@ -49,6 +49,8 @@ export interface ProviderStreamHandlers {
 export interface TokenUsage {
   inputTokens: number; // 本次请求的输入 token（≈当前上下文总大小）
   outputTokens: number;
+  cacheHitTokens?: number; // 缓存命中的输入 token（便宜很多；DeepSeek 等返回）
+  cacheMissTokens?: number; // 缓存未命中的输入 token
 }
 
 export interface ProviderResult {

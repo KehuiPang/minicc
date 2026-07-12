@@ -73,6 +73,10 @@ const PROVIDER_LABELS: Record<string, string> = {
   qwen: "通义千问",
   doubao: "豆包",
   minimax: "MiniMax",
+  zhipu: "智谱 GLM",
+  kimi: "Kimi",
+  hunyuan: "腾讯混元",
+  grok: "Grok",
   custom: "自定义端点",
 };
 function labelFor(cfg: ReturnType<typeof loadConfig>, providerId?: string): string {
