@@ -72,6 +72,20 @@ desktop/        Electron 桌面版（复用 src/ 核心）
   main / preload / renderer(React)
 ```
 
+## 更新日志
+
+### v1.1.0
+- **新增多平台预设**：智谱 GLM、Kimi（月之暗面）、腾讯混元、xAI Grok（加上原有 DeepSeek / 通义千问 / 豆包 / MiniMax）
+- **流式输出**：回复逐字实时打印
+- **底栏快捷切换**：点供应商名 / 模型名直接弹菜单切换，不用开设置
+- **凭证分槽保存**，修复切换供应商时 API key 被清空的问题
+- 模型选择移到「模型平台」正下方 + 灰字标注基座；简约 SVG 眼睛图标；菜单项不换行
+- 上下文压缩改按**各模型真实窗口（80%）**触发
+- 修正各家 API Key 获取链接
+
+### v1.0.0
+- 首个版本：Claude API / OpenAI / 本地自建端点；真工具（读写 / 编辑 / 命令 / glob·grep）+ 权限确认；多模态；多会话；Markdown 渲染 + 代码高亮；上下文自动压缩 + token 统计；终端 CLI（Ink）+ macOS 桌面 GUI（Electron）。
+
 ## License
 
 MIT
