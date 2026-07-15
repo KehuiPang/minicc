@@ -1,4 +1,4 @@
-// minicc 核心类型定义
+// wuwei 核心类型定义
 // 这里刻意贴近 Anthropic Messages API 的消息模型（复刻 Claude Code 的底层语义）：
 // 一条对话由 messages 组成；助手可能回文本，也可能回 tool_use；
 // 我们本地执行工具后，把 tool_result 作为一条 user 消息塞回，继续循环。

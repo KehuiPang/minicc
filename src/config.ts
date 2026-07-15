@@ -2,7 +2,7 @@
 // 两条路：
 //   1) Claude API key（provider=anthropic）—— ANTHROPIC_API_KEY(sk-ant-...)
 //   2) OpenAI 兼容端点（provider=openai）—— 官方 OpenAI、或本地/自建服务器(vLLM/Ollama 等)
-//      MINICC_BASE_URL(如 https://api.openai.com/v1 或 http://localhost:8000/v1) + MINICC_API_KEY + MINICC_MODEL
+//      WUWEI_BASE_URL(如 https://api.openai.com/v1 或 http://localhost:8000/v1) + WUWEI_API_KEY + WUWEI_MODEL
 
 export interface Config {
   provider: "anthropic" | "openai";
@@ -44,33 +44,33 @@ function pick(name: string, fallback = ""): string {
 }
 
 export function loadConfig(): Config {
-  const explicit = pick("MINICC_PROVIDER");
+  const explicit = pick("WUWEI_PROVIDER");
   const provider: Config["provider"] =
     explicit === "openai" || explicit === "anthropic"
       ? (explicit as Config["provider"])
-      : pick("MINICC_BASE_URL")
+      : pick("WUWEI_BASE_URL")
         ? "openai"
         : "anthropic";
 
   const model =
-    pick("MINICC_MODEL") || (provider === "anthropic" ? "claude-sonnet-4-20250514" : "gpt-4o");
+    pick("WUWEI_MODEL") || (provider === "anthropic" ? "claude-sonnet-4-20250514" : "gpt-4o");
 
   const apiKey =
-    provider === "anthropic" ? pick("ANTHROPIC_API_KEY") : pick("MINICC_API_KEY", "not-needed");
+    provider === "anthropic" ? pick("ANTHROPIC_API_KEY") : pick("WUWEI_API_KEY", "not-needed");
 
-  const ctxWindow = Number(pick("MINICC_CONTEXT_WINDOW")) || contextWindowFor(model);
+  const ctxWindow = Number(pick("WUWEI_CONTEXT_WINDOW")) || contextWindowFor(model);
 
   return {
     provider,
     model,
     apiKey,
-    baseUrl: pick("MINICC_BASE_URL") || undefined,
-    maxTokens: Number(pick("MINICC_MAX_TOKENS", "8192")),
+    baseUrl: pick("WUWEI_BASE_URL") || undefined,
+    maxTokens: Number(pick("WUWEI_MAX_TOKENS", "8192")),
     contextWindow: ctxWindow,
     // 阈值默认=窗口的 80%(留 20% 余量再压缩)；env 可显式覆盖
-    compactThreshold: pick("MINICC_COMPACT_THRESHOLD")
-      ? Number(pick("MINICC_COMPACT_THRESHOLD"))
+    compactThreshold: pick("WUWEI_COMPACT_THRESHOLD")
+      ? Number(pick("WUWEI_COMPACT_THRESHOLD"))
       : Math.floor(ctxWindow * 0.8),
-    keepRecentTurns: Number(pick("MINICC_KEEP_RECENT", "6")),
+    keepRecentTurns: Number(pick("WUWEI_KEEP_RECENT", "6")),
   };
 }

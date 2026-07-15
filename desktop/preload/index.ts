@@ -16,7 +16,7 @@ const EVENTS = [
   "evt:session-loaded",
 ] as const;
 
-contextBridge.exposeInMainWorld("minicc", {
+contextBridge.exposeInMainWorld("wuwei", {
   send: (text: string, images?: string[]) => ipcRenderer.send("chat:send", text, images),
   stop: () => ipcRenderer.send("chat:stop"),
   reset: () => ipcRenderer.send("chat:reset"),

@@ -1,4 +1,4 @@
-// 会话持久化：会话列表 + 每会话消息存到 ~/.minicc/。
+// 会话持久化：会话列表 + 每会话消息存到 ~/.wuwei/。
 import {
   readFileSync,
   writeFileSync,
@@ -9,7 +9,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import type { Message } from "../../src/types.js";
 
-const DIR = join(homedir(), ".minicc");
+const DIR = join(homedir(), ".wuwei");
 const SDIR = join(DIR, "sessions");
 const META = join(DIR, "sessions.json");
 

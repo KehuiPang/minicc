@@ -13,7 +13,7 @@ const stub: Provider = {
       return {
         content: [
           { type: "text", text: "我先执行一下命令。" },
-          { type: "tool_use", id: "t1", name: "bash", input: { command: "echo minicc-ok" } },
+          { type: "tool_use", id: "t1", name: "bash", input: { command: "echo wuwei-ok" } },
         ],
         stopReason: "tool_use",
       };
@@ -21,9 +21,9 @@ const stub: Provider = {
     // 第2轮：确认收到了工具结果
     const last = messages[messages.length - 1];
     const gotResult = last.content.some(
-      (b) => b.type === "tool_result" && b.content.includes("minicc-ok"),
+      (b) => b.type === "tool_result" && b.content.includes("wuwei-ok"),
     );
-    const text = gotResult ? "命令已执行，输出为 minicc-ok。完成。" : "未拿到工具结果。";
+    const text = gotResult ? "命令已执行，输出为 wuwei-ok。完成。" : "未拿到工具结果。";
     handlers.onText?.(text);
     return { content: [{ type: "text", text }], stopReason: "end_turn" };
   },
@@ -40,6 +40,6 @@ await agent.send("跑个命令验证一下", {
 });
 
 console.log("[final]", finalText);
-const pass = finalText.includes("minicc-ok") && turn === 2;
+const pass = finalText.includes("wuwei-ok") && turn === 2;
 console.log(pass ? "SMOKE PASS ✅" : "SMOKE FAIL ❌");
 process.exit(pass ? 0 : 1);

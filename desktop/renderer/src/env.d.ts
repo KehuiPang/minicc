@@ -1,5 +1,5 @@
-// 渲染进程可见的 window.minicc 类型（来自 preload）
-export interface MiniccApi {
+// 渲染进程可见的 window.wuwei 类型（来自 preload）
+export interface WuweiApi {
   send(text: string, images?: string[]): void;
   stop(): void;
   reset(): void;
@@ -14,7 +14,7 @@ export interface MiniccApi {
 }
 declare global {
   interface Window {
-    minicc: MiniccApi;
+    wuwei: WuweiApi;
   }
 }
 export {};

@@ -89,10 +89,10 @@ export function App() {
   const [showModelMenu, setShowModelMenu] = useState(false);
   const [showProviderMenu, setShowProviderMenu] = useState(false);
   const [sidebarW, setSidebarW] = useState(
-    () => Number(localStorage.getItem("minicc-sidebar-w")) || 232,
+    () => Number(localStorage.getItem("wuwei-sidebar-w")) || 232,
   );
   const [collapsed, setCollapsed] = useState(
-    () => localStorage.getItem("minicc-sidebar-collapsed") === "1",
+    () => localStorage.getItem("wuwei-sidebar-collapsed") === "1",
   );
   const sidebarWRef = useRef(sidebarW);
   sidebarWRef.current = sidebarW;
@@ -104,7 +104,7 @@ export function App() {
   const alwaysAllowRef = useRef<Set<string>>(
     new Set((() => {
       try {
-        return JSON.parse(localStorage.getItem("minicc-allow") || "[]");
+        return JSON.parse(localStorage.getItem("wuwei-allow") || "[]");
       } catch {
         return [];
       }
@@ -121,22 +121,22 @@ export function App() {
 
   // 当前平台预设(用于底栏模型快切列出该平台模型)；设置面板关闭后刷新
   useEffect(() => {
-    window.minicc.getSettings().then((r) => setCurProviderId(r?.settings?.providerId || ""));
+    window.wuwei.getSettings().then((r) => setCurProviderId(r?.settings?.providerId || ""));
   }, [showSettings]);
   const curPreset = PRESETS.find((p) => p.id === curProviderId);
   const quickModels = curPreset?.models ?? [];
   async function quickModel(m: string) {
-    const r = await window.minicc.getSettings();
+    const r = await window.wuwei.getSettings();
     const cur = r?.settings;
-    if (cur) window.minicc.setSettings({ ...cur, model: m });
+    if (cur) window.wuwei.setSettings({ ...cur, model: m });
     setShowModelMenu(false);
   }
   // 快捷切换供应商：带出该平台已存的 key/baseUrl，默认用该平台第一个模型
   async function quickProvider(p: (typeof PRESETS)[number]) {
-    const r = await window.minicc.getSettings();
+    const r = await window.wuwei.getSettings();
     const cur = r?.settings || {};
     const slot = (cur.creds || {})[p.id] || {};
-    window.minicc.setSettings({
+    window.wuwei.setSettings({
       ...cur,
       kind: p.kind,
       providerId: p.id,
@@ -149,7 +149,7 @@ export function App() {
   }
 
   useEffect(() => {
-    window.minicc.onEvent((ch, payload: any) => {
+    window.wuwei.onEvent((ch, payload: any) => {
       switch (ch) {
         case "evt:ready":
           setMeta(payload);
@@ -189,7 +189,7 @@ export function App() {
           break;
         case "evt:permission-request":
           if (autoRef.current || alwaysAllowRef.current.has(payload.name))
-            window.minicc.respondPermission(payload.id, "allow");
+            window.wuwei.respondPermission(payload.id, "allow");
           else setPending(payload);
           break;
         case "evt:usage":
@@ -243,7 +243,7 @@ export function App() {
     const up = () => {
       document.removeEventListener("mousemove", move);
       document.removeEventListener("mouseup", up);
-      localStorage.setItem("minicc-sidebar-w", String(sidebarWRef.current));
+      localStorage.setItem("wuwei-sidebar-w", String(sidebarWRef.current));
     };
     document.addEventListener("mousemove", move);
     document.addEventListener("mouseup", up);
@@ -251,7 +251,7 @@ export function App() {
 
   function toggleCollapse(v: boolean) {
     setCollapsed(v);
-    localStorage.setItem("minicc-sidebar-collapsed", v ? "1" : "0");
+    localStorage.setItem("wuwei-sidebar-collapsed", v ? "1" : "0");
   }
 
   // 读取图片文件为 dataURL
@@ -269,7 +269,7 @@ export function App() {
     if (busy) return;
     if (!text && pendingImages.length === 0) return;
     if (text === "/reset") {
-      window.minicc.reset();
+      window.wuwei.reset();
       setInput("");
       return;
     }
@@ -282,25 +282,25 @@ export function App() {
     setBusy(true);
     thinkStartRef.current = Date.now();
     charsRef.current = 0;
-    window.minicc.send(text, imgs.length ? imgs : undefined);
+    window.wuwei.send(text, imgs.length ? imgs : undefined);
     setInput("");
     setPendingImages([]);
     if (taRef.current) taRef.current.style.height = "auto";
   }
 
-  const stop = () => window.minicc.stop();
+  const stop = () => window.wuwei.stop();
 
   function answerPerm(decision: "allow" | "deny") {
     if (!pending) return;
-    window.minicc.respondPermission(pending.id, decision);
+    window.wuwei.respondPermission(pending.id, decision);
     setPending(null);
   }
 
   function allowAlways() {
     if (!pending) return;
     alwaysAllowRef.current.add(pending.name);
-    localStorage.setItem("minicc-allow", JSON.stringify([...alwaysAllowRef.current]));
-    window.minicc.respondPermission(pending.id, "allow");
+    localStorage.setItem("wuwei-allow", JSON.stringify([...alwaysAllowRef.current]));
+    window.wuwei.respondPermission(pending.id, "allow");
     setPending(null);
   }
 
@@ -344,7 +344,7 @@ export function App() {
             «
           </button>
         </div>
-        <button className="new-session" onClick={() => window.minicc.newSession()}>
+        <button className="new-session" onClick={() => window.wuwei.newSession()}>
           ＋ 新对话
         </button>
         <div className="session-list">
@@ -353,14 +353,14 @@ export function App() {
             <div
               key={s.id}
               className={"session-item" + (s.id === currentId ? " active" : "")}
-              onClick={() => window.minicc.switchSession(s.id)}
+              onClick={() => window.wuwei.switchSession(s.id)}
             >
               <span className="s-title">{s.title}</span>
               <button
                 className="s-del"
                 onClick={(e) => {
                   e.stopPropagation();
-                  window.minicc.deleteSession(s.id);
+                  window.wuwei.deleteSession(s.id);
                 }}
               >
                 ×
@@ -379,7 +379,7 @@ export function App() {
 
       {/* 主区 */}
       <div className="main">
-        <div className="titlebar">minicc — {meta.cwd || "…"}</div>
+        <div className="titlebar">wuwei — {meta.cwd || "…"}</div>
 
         <div className="toolbar">
           {collapsed && (
@@ -409,7 +409,7 @@ export function App() {
           {items.length === 0 && (
             <div className="welcome">
               <h1>
-                minicc <span className="dot">●</span>
+                wuwei <span className="dot">●</span>
               </h1>
               <p>自研 Claude Code · 桌面版。直接描述你的编码需求，它会读写文件、执行命令帮你完成。</p>
               <p>Enter 发送，Shift+Enter 换行，↑ 翻历史，忙碌时 Esc 停止。</p>
@@ -741,7 +741,7 @@ function MarkdownView({ text }: { text: string }) {
               href={href}
               onClick={(e) => {
                 e.preventDefault();
-                if (href) window.minicc.openExternal(href);
+                if (href) window.wuwei.openExternal(href);
               }}
             >
               {children}
@@ -1231,7 +1231,7 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
   }
 
   useEffect(() => {
-    window.minicc.getSettings().then((r) => {
+    window.wuwei.getSettings().then((r) => {
       const s = r?.settings;
       if (!s) return;
       const p = PRESETS.find((x) => x.id === s.providerId) ?? PRESETS[0];
@@ -1277,7 +1277,7 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
       baseUrl: preset.kind === "openai" ? baseUrl.trim() || preset.baseUrl : undefined,
     };
     const newCreds = { ...credsRef.current, [pid]: slot }; // 存进当前平台的槽(用最新creds,别丢其它槽)
-    window.minicc.setSettings({
+    window.wuwei.setSettings({
       kind: preset.kind,
       providerId: pid,
       model: model || undefined,
@@ -1338,7 +1338,7 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
         {preset.keyUrl && (
           <div className="key-guide">
             没有 API Key？
-            <a onClick={() => window.minicc.openExternal(preset.keyUrl)}>
+            <a onClick={() => window.wuwei.openExternal(preset.keyUrl)}>
               点此前往 {preset.label} 官网获取 ↗
             </a>
             <span className="key-steps">（登录 → 创建 API Key → 复制粘贴到下方）</span>

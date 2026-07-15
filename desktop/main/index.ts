@@ -1,4 +1,4 @@
-// Electron 主进程：创建窗口，复用 minicc 核心(agent/tools/config)，
+// Electron 主进程：创建窗口，复用 wuwei 核心(agent/tools/config)，
 // 通过 IPC 把 Agent 流式 hooks 推给渲染进程，权限确认走 IPC 往返。
 import { app, BrowserWindow, ipcMain, protocol, net, shell } from "electron";
 import { join } from "node:path";
@@ -157,7 +157,7 @@ function createWindow() {
     ...(b?.x != null && b?.y != null ? { x: b.x, y: b.y } : {}),
     minWidth: 640,
     minHeight: 480,
-    title: "minicc",
+    title: "wuwei",
     backgroundColor: "#1a1815",
     titleBarStyle: "hiddenInset",
     webPreferences: {

@@ -1,9 +1,9 @@
-// 用户设置持久化：模型后端(provider)与模型选择，存 ~/.minicc/config.json。
+// 用户设置持久化：模型后端(provider)与模型选择，存 ~/.wuwei/config.json。
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-const DIR = join(homedir(), ".minicc");
+const DIR = join(homedir(), ".wuwei");
 const FILE = join(DIR, "config.json");
 const USG = join(DIR, "usage.json");
 const WIN = join(DIR, "window.json");
@@ -81,20 +81,20 @@ export function saveSettings(s: Settings) {
 
 // 把设置映射成环境变量（loadConfig 据此构造 Config）
 export function applyEnvFromSettings(s: Settings | null) {
-  for (const k of ["MINICC_PROVIDER", "MINICC_MODEL", "MINICC_BASE_URL", "MINICC_API_KEY", "ANTHROPIC_API_KEY"]) {
+  for (const k of ["WUWEI_PROVIDER", "WUWEI_MODEL", "WUWEI_BASE_URL", "WUWEI_API_KEY", "ANTHROPIC_API_KEY"]) {
     delete process.env[k];
   }
   if (!s) return; // 无设置：走 loadConfig 自动推断
-  if (s.model) process.env.MINICC_MODEL = s.model;
+  if (s.model) process.env.WUWEI_MODEL = s.model;
   switch (s.kind) {
     case "anthropic-apikey":
-      process.env.MINICC_PROVIDER = "anthropic";
+      process.env.WUWEI_PROVIDER = "anthropic";
       if (s.apiKey) process.env.ANTHROPIC_API_KEY = s.apiKey;
       break;
     case "openai":
-      process.env.MINICC_PROVIDER = "openai";
-      if (s.baseUrl) process.env.MINICC_BASE_URL = s.baseUrl;
-      if (s.apiKey) process.env.MINICC_API_KEY = s.apiKey;
+      process.env.WUWEI_PROVIDER = "openai";
+      if (s.baseUrl) process.env.WUWEI_BASE_URL = s.baseUrl;
+      if (s.apiKey) process.env.WUWEI_API_KEY = s.apiKey;
       break;
   }
 }

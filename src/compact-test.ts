@@ -34,7 +34,7 @@ class FakeProvider implements Provider {
   }
 }
 
-const cwd = mkdtempSync(join(tmpdir(), "minicc-compact-"));
+const cwd = mkdtempSync(join(tmpdir(), "wuwei-compact-"));
 
 // 脚本：第1轮先调 bash(高 input 触发压缩阈值)，再给最终答复；第2轮触发压缩后再答复。
 const script: ProviderResult[] = [

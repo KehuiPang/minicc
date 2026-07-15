@@ -45,7 +45,7 @@ export default defineConfig({
         input: resolve(root, "desktop/preload/index.ts"),
         external: ["electron"],
         // Electron preload(sandbox) 必须是 CommonJS；package type:module 下
-        // .js 会被当 ESM，故强制 cjs + .cjs 后缀，否则 preload 加载失败→window.minicc 丢失
+        // .js 会被当 ESM，故强制 cjs + .cjs 后缀，否则 preload 加载失败→window.wuwei 丢失
         output: { format: "cjs", entryFileNames: "index.cjs" },
       },
     },

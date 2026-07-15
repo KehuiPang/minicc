@@ -42,7 +42,7 @@ class FakeProvider implements Provider {
   }
 }
 
-const cwd = mkdtempSync(join(tmpdir(), "minicc-ui-"));
+const cwd = mkdtempSync(join(tmpdir(), "wuwei-ui-"));
 const agent = new Agent(new FakeProvider(), "sys", ALL_TOOLS, { cwd }, TOOL_MAP, {
   compactThreshold: 0,
 });

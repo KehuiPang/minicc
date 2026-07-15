@@ -1,12 +1,12 @@
 {
-  "name": "minicc",
+  "name": "wuwei",
   "version": "1.1.0",
   "description": "Open-source mini Claude Code — a from-scratch coding agent (CLI + macOS desktop). Bring your own API key or local endpoint.",
   "license": "MIT",
   "type": "module",
   "main": "./out/main/index.js",
   "bin": {
-    "minicc": "./bin/minicc.js"
+    "wuwei": "./bin/wuwei.js"
   },
   "files": [
     "src",
@@ -27,8 +27,8 @@
     "node": ">=20"
   },
   "build": {
-    "appId": "com.tanxun.minicc",
-    "productName": "minicc",
+    "appId": "io.wuweiai.app",
+    "productName": "无为",
     "directories": {
       "output": "release"
     },
@@ -50,7 +50,7 @@
       "category": "public.app-category.developer-tools"
     },
     "dmg": {
-      "title": "minicc ${version}"
+      "title": "无为 ${version}"
     },
     "linux": {
       "target": [
@@ -65,7 +65,7 @@
       ],
       "icon": "build/icon.png",
       "category": "Development",
-      "maintainer": "KehuiPang"
+      "maintainer": "Wuwei"
     },
     "win": {
       "target": [
@@ -79,7 +79,7 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "minicc-${version}-setup.${ext}"
+      "artifactName": "wuwei-${version}-setup.${ext}"
     },
     "npmRebuild": false
   },

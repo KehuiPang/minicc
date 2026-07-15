@@ -1,4 +1,4 @@
-// minicc 终端入口（P3：Ink TUI）。构造 Agent，渲染 <App/>。
+// wuwei 终端入口（P3：Ink TUI）。构造 Agent，渲染 <App/>。
 import React from "react";
 import { render } from "ink";
 import { loadConfig } from "./config.js";
@@ -14,7 +14,7 @@ function fail(msg: string): never {
 }
 
 if (!process.stdin.isTTY || !process.stdout.isTTY) {
-  fail("minicc 需要在交互式终端(TTY)里运行。请打开 Terminal / iTerm，直接运行 minicc。");
+  fail("无为 需要在交互式终端(TTY)里运行。请打开 Terminal / iTerm，直接运行 wuwei。");
 }
 
 const cfg = loadConfig();
@@ -22,7 +22,7 @@ if (cfg.provider === "anthropic" && !cfg.apiKey) {
   fail(
     "未设置凭证。二选一：\n" +
       "  · Claude API key : export ANTHROPIC_API_KEY=sk-ant-...\n" +
-      "  · OpenAI/本地    : export MINICC_BASE_URL=https://api.openai.com/v1（或本地端点）MINICC_API_KEY=... MINICC_MODEL=...",
+      "  · OpenAI/本地    : export WUWEI_BASE_URL=https://api.openai.com/v1（或本地端点）WUWEI_API_KEY=... WUWEI_MODEL=...",
   );
 }
 

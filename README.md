@@ -1,4 +1,4 @@
-# minicc
+# 无为 <sub>Wuwei</sub>
 
 A from-scratch, open-source **coding agent** — a mini Claude Code you fully own. CLI **and** native macOS desktop app.
 
@@ -34,9 +34,9 @@ npm run dev            # 终端版
 npm run desktop:dev    # 桌面版(开发模式)
 
 # —— 用 OpenAI / 本地 / 自建端点 ——
-export MINICC_BASE_URL=https://api.openai.com/v1   # 或 http://localhost:8000/v1
-export MINICC_API_KEY=sk-...                        # 本地可留 not-needed
-export MINICC_MODEL=gpt-4o                           # 或你本地模型名
+export WUWEI_BASE_URL=https://api.openai.com/v1   # 或 http://localhost:8000/v1
+export WUWEI_API_KEY=sk-...                        # 本地可留 not-needed
+export WUWEI_MODEL=gpt-4o                           # 或你本地模型名
 npm run dev
 ```
 
@@ -46,7 +46,7 @@ npm run dev
 
 ```bash
 npm run desktop:build     # 构建 main/preload/renderer
-npm run desktop:pack      # 打包出 release/mac/minicc.app
+npm run desktop:pack      # 打包出 release/mac/wuwei.app
 ```
 
 ## 环境变量
@@ -54,11 +54,11 @@ npm run desktop:pack      # 打包出 release/mac/minicc.app
 | 变量 | 说明 |
 |---|---|
 | `ANTHROPIC_API_KEY` | Claude API key（provider=anthropic 时用）|
-| `MINICC_BASE_URL` | OpenAI 兼容端点（设了即视为 openai 后端）|
-| `MINICC_API_KEY` | OpenAI/自建端点的 key |
-| `MINICC_MODEL` | 模型名 |
-| `MINICC_MAX_TOKENS` | 单次最大输出 token（默认 8192）|
-| `MINICC_COMPACT_THRESHOLD` | 上下文超此 token 数自动压缩（默认取该模型窗口的 80%）|
+| `WUWEI_BASE_URL` | OpenAI 兼容端点（设了即视为 openai 后端）|
+| `WUWEI_API_KEY` | OpenAI/自建端点的 key |
+| `WUWEI_MODEL` | 模型名 |
+| `WUWEI_MAX_TOKENS` | 单次最大输出 token（默认 8192）|
+| `WUWEI_COMPACT_THRESHOLD` | 上下文超此 token 数自动压缩（默认取该模型窗口的 80%）|
 
 ## 结构
 
